@@ -89,7 +89,7 @@ class WriteTest {
         terminalBuffer.setCursorPosition(9, 0)
         terminalBuffer.insertText(" successful ")
         val expectedOutput = "This is a successful test."
-        val testOutput = terminalBuffer.getScreenContentAsString()
+        val testOutput = terminalBuffer.getScreenContent()
         assertEquals(expectedOutput, testOutput)
     }
 
@@ -105,7 +105,7 @@ class WriteTest {
         assertEquals(9 + textToBeInserted.length, x)
         assertEquals(0, y)
         val expectedOutput = "This is a successful test for lines ending in a \nline break."
-        val testOutput = terminalBuffer.getScreenContentAsString()
+        val testOutput = terminalBuffer.getScreenContent()
         assertEquals(expectedOutput, testOutput)
     }
 
@@ -183,6 +183,51 @@ class WriteTest {
         val expected2ndRowAttributes = Attributes()
         val actual2ndRowAttributes = terminalBuffer.getAttributesAtScreenPosition(0, 1)
         assertEquals(expected2ndRowAttributes, actual2ndRowAttributes)
+    }
+
+    @Test
+    fun `inserting line at the end of the screen properly updates scrollback`(){
+        val terminalBuffer = TerminalBuffer()
+        val input = "Test"
+        terminalBuffer.write(input)
+        terminalBuffer.insertEmptyLine()
+        val expectedOutput = "Test"
+        val actualOutput = terminalBuffer.getScrollbackRowAsString(0)
+        assertEquals(expectedOutput, actualOutput)
+    }
+
+    @Test
+    fun `clearing the screen properly works`(){
+        val terminalBuffer = TerminalBuffer()
+        val input = "Test"
+        terminalBuffer.write(input)
+        terminalBuffer.clearScreen()
+        val expectedOutput = ""
+        val actualOutput = terminalBuffer.getScreenContent()
+        assertEquals(expectedOutput, actualOutput)
+    }
+
+    @Test
+    fun `clearing the screen and the scrollback properly works`(){
+        val terminalBuffer = TerminalBuffer()
+        val input = "Test"
+        terminalBuffer.write(input)
+        terminalBuffer.insertEmptyLine()
+        terminalBuffer.setCursorPosition(0, 0)
+        terminalBuffer.write("Test")
+        terminalBuffer.clearAll()
+        val expectedOutput = ""
+        val actualOutput = terminalBuffer.getAllContent()
+        assertEquals(expectedOutput, actualOutput)
+    }
+
+    @Test
+    fun `wide character test`(){
+        val terminalBuffer = TerminalBuffer()
+        val input = "Test \u4E2D"
+        terminalBuffer.write(input)
+        val actualOutput = terminalBuffer.getScreenContent()
+        assertEquals(input, actualOutput)
     }
 
     @AfterEach
